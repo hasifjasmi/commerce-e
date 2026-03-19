@@ -1,4 +1,4 @@
-import { CATALOG_CURRENCY, type CatalogProduct } from "./types";
+import { CATALOG_CURRENCIES, type CatalogProduct } from "./types";
 
 const ALLOWED_SIZES = new Set(["XS", "S", "M", "L", "XL"]);
 
@@ -45,9 +45,11 @@ export function assertCatalogProductsValid(
       `product(${product.id}).stripePriceId`,
     );
 
-    if (product.price.currency !== CATALOG_CURRENCY) {
+    if (!CATALOG_CURRENCIES.includes(product.price.currency)) {
       throw new Error(
-        `Catalog validation failed: product(${product.id}).price.currency must be '${CATALOG_CURRENCY}'.`,
+        `Catalog validation failed: product(${product.id}).price.currency must be one of '${CATALOG_CURRENCIES.join(
+          ", ",
+        )}'.`,
       );
     }
     assertPositiveInteger(

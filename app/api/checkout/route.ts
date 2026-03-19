@@ -100,6 +100,7 @@ export async function POST(request: Request) {
   );
 
   const lineItems: { price: string; quantity: number }[] = [];
+  let cartCurrency: CatalogProduct["price"]["currency"] | null = null;
 
   for (const item of payload.items) {
     if (!isNonEmptyString(item?.productId) || !isNonEmptyString(item?.size)) {
@@ -117,6 +118,16 @@ export async function POST(request: Request) {
     const product = catalogMap.get(item.productId);
     if (!product) {
       return jsonError(400, "INVALID_PRODUCT", "Product does not exist.");
+    }
+
+    if (!cartCurrency) {
+      cartCurrency = product.price.currency;
+    } else if (product.price.currency !== cartCurrency) {
+      return jsonError(
+        400,
+        "MIXED_CURRENCY",
+        "Cart must contain items in a single currency.",
+      );
     }
 
     const size = item.size as CatalogProductSize;

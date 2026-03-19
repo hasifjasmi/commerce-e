@@ -10,6 +10,15 @@ export function CartDrawer() {
   const locale = React.useMemo(() => getCheckoutLocale(), []);
   const t = React.useMemo(() => getCheckoutMessages(locale), [locale]);
 
+  const subtotalCurrency = React.useMemo(() => {
+    if (items.length === 0) return null;
+    const currency = items[0].currency;
+    for (const item of items) {
+      if (item.currency !== currency) return null;
+    }
+    return currency;
+  }, [items]);
+
   const [isCheckingOut, setIsCheckingOut] = React.useState(false);
   const [checkoutError, setCheckoutError] = React.useState<string | null>(null);
 
@@ -25,6 +34,7 @@ export function CartDrawer() {
   }, [isOpen, closeCart]);
 
   const isEmpty = items.length === 0;
+  const hasMixedCurrency = !isEmpty && subtotalCurrency === null;
 
   async function onCheckout() {
     if (isEmpty || isCheckingOut) return;
@@ -130,13 +140,17 @@ export function CartDrawer() {
             <div className="flex items-center justify-between text-sm">
               <span className="text-black/70 dark:text-white/70">Subtotal</span>
               <span className="font-semibold text-black dark:text-white">
-                {items.length ? formatMoneySen(items[0].currency, subtotalSen) : formatMoneySen("myr", 0)}
+                {items.length === 0
+                  ? formatMoneySen("myr", 0)
+                  : subtotalCurrency
+                    ? formatMoneySen(subtotalCurrency, subtotalSen)
+                    : "Multiple currencies"}
               </span>
             </div>
             <button
               data-testid="cart-checkout"
               type="button"
-              disabled={isEmpty || isCheckingOut}
+              disabled={isEmpty || isCheckingOut || hasMixedCurrency}
               className={
                 "mt-3 w-full rounded-md px-4 py-2 text-sm font-semibold transition-colors " +
                 (isEmpty
@@ -190,6 +204,7 @@ function getCheckoutMessages(locale: CheckoutLocale) {
       invalidSize: "Selected size is no longer available.",
       sessionFailed: "Unable to start checkout. Please try again.",
       configMissing: "Checkout is temporarily unavailable.",
+      mixedCurrency: "Please checkout items in a single currency.",
     },
     bm: {
       checkout: "Bayar",
@@ -200,6 +215,7 @@ function getCheckoutMessages(locale: CheckoutLocale) {
       invalidSize: "Saiz yang dipilih tidak lagi tersedia.",
       sessionFailed: "Tidak dapat memulakan pembayaran. Sila cuba lagi.",
       configMissing: "Pembayaran sementara tidak tersedia.",
+      mixedCurrency: "Sila bayar item dalam satu mata wang.",
     },
   } as const;
 
@@ -240,6 +256,8 @@ function localizeCheckoutError(
       return t.sessionFailed;
     case "STRIPE_CONFIG_MISSING":
       return t.configMissing;
+    case "MIXED_CURRENCY":
+      return t.mixedCurrency;
     default:
       return t.genericError;
   }

@@ -1,4 +1,4 @@
-import { CATALOG_CURRENCY, type CatalogProductSize } from "@/lib/catalog";
+import { type CatalogCurrency, type CatalogProductSize } from "@/lib/catalog";
 import {
   cartLineItemKey,
   type CartLineItem,
@@ -18,6 +18,7 @@ export type CartAction =
           size: CatalogProductSize;
           quantity: number;
           unitAmountSen: number;
+          currency: CatalogCurrency;
         }>;
       };
     }
@@ -28,6 +29,7 @@ export type CartAction =
         name: string;
         size: CatalogProductSize;
         unitAmountSen: number;
+        currency: CatalogCurrency;
         quantity?: number;
       };
     }
@@ -55,6 +57,7 @@ function upsertItem(
     ...existing,
     name: next.name,
     unitAmountSen: next.unitAmountSen,
+    currency: next.currency,
     quantity: Math.min(existing.quantity + next.quantity, MAX_CART_QUANTITY),
   };
   return [...items.slice(0, idx), merged, ...items.slice(idx + 1)];
@@ -77,7 +80,7 @@ export function cartReducer(state: CartState, action: CartAction): CartState {
           name: i.name,
           size: i.size,
           quantity: Math.min(i.quantity, MAX_CART_QUANTITY),
-          currency: CATALOG_CURRENCY,
+          currency: i.currency,
           unitAmountSen: i.unitAmountSen,
         }));
 
@@ -102,7 +105,7 @@ export function cartReducer(state: CartState, action: CartAction): CartState {
         name: action.payload.name,
         size: action.payload.size,
         quantity: qty,
-        currency: CATALOG_CURRENCY,
+        currency: action.payload.currency,
         unitAmountSen: action.payload.unitAmountSen,
       };
 

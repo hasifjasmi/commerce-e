@@ -82,6 +82,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             name: product.name,
             size,
             unitAmountSen: product.price.unitAmountSen,
+            currency: product.price.currency,
           },
         }),
       inc: (key) => dispatch({ type: "CART_INC", payload: { key } }),

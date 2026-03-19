@@ -1,5 +1,6 @@
 export const CATALOG_CURRENCY = "myr" as const;
-export type CatalogCurrency = typeof CATALOG_CURRENCY;
+export const CATALOG_CURRENCIES = ["myr", "usd"] as const;
+export type CatalogCurrency = (typeof CATALOG_CURRENCIES)[number];
 
 export type CatalogProductSize =
   | "XS"
